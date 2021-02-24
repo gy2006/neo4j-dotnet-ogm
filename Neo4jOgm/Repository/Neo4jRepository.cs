@@ -137,13 +137,15 @@ namespace Neo4jOgm.Repository
             {
                 var rMeta = _context.GetMetaData(rp.EntityType);
                 var iRecords = tx.Run(CypherTranslator.FindRelationshipNodesById(meta, id, rp)).ToList();
+                if (iRecords.Count == 0) continue;
+                
                 if (rp.IsCollection)
                 {
                     var listVal = ToEntityList(iRecords, rMeta);
                     rp.SetValue(entity, listVal);
                     continue;
                 }
-
+                
                 rp.SetValue(entity, ToEntity(iRecords[0], rMeta));
             }
         }
