@@ -5,7 +5,7 @@ using Neo4jOgm.Attribute;
 namespace Neo4jOgmTest
 {
     [NeoNodeEntity("person", "p")]
-    public class PersonForTest
+    public class Person
     {
         [NeoNodeId]
         public long? Id { get; set; }
@@ -13,10 +13,13 @@ namespace Neo4jOgmTest
         public string Name { get; set; }
         
         [NeoRelationship("HAS_ADDRESS")]
-        public List<AddressForTest> Addresses { get; set; }
+        public List<Address> Addresses { get; set; }
         
         [NeoRelationship("TEACH_FOR")]
-        public StudentForTest Student { get; set; }
+        public Student Student { get; set; }
+        
+        [NeoRelationship("ARE_FRIENDS")]
+        public List<Person> Friends { get; set; }
         
         [NeoCreatedAt]
         public DateTime? CreatedAt { get; set; }
@@ -29,7 +32,7 @@ namespace Neo4jOgmTest
     }
 
     [NeoNodeEntity("address", "a")]
-    public class AddressForTest
+    public class Address
     {
         [NeoNodeId]
         public long? Id { get; set; }
@@ -46,7 +49,7 @@ namespace Neo4jOgmTest
     }
 
     [NeoNodeEntity("student", "s")]
-    public class StudentForTest
+    public class Student
     {
         [NeoNodeId]
         public long? Id { get; set; }

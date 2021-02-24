@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Neo4jOgm.Domain;
@@ -17,7 +18,7 @@ namespace Neo4jOgm.Cypher
         {
             var meta = context.GetMetaData(entity.GetType());
 
-            var createQuery = ToCreateNode(context, entity, NodeKey.Create(meta.Key));
+            var createQuery = ToCreateNode(context, entity, NodeKey.Create(meta.Key), new Dictionary<object, string>());
             createQuery.Query.Append("RETURN ");
             foreach (var key in createQuery.FlattedEntities.Keys)
             {
@@ -28,8 +29,9 @@ namespace Neo4jOgm.Cypher
             return createQuery;
         }
 
-        private static CreateQueryReturn ToCreateNode(NeoContext context, object entity, string queryKey)
+        private static CreateQueryReturn ToCreateNode(NeoContext context, object entity, string queryKey, IDictionary<object, string> entities)
         {
+            entities.Add(entity, queryKey);
             var meta = context.GetMetaData(entity.GetType());
 
             meta.GetCreatedAtProperty()?.SetValue(entity, DateTime.UtcNow);
@@ -51,8 +53,14 @@ namespace Neo4jOgm.Cypher
                 var rCollection = p.IsCollection ? (ICollection) rEntity : new[] {rEntity};
                 foreach (var item in rCollection)
                 {
+                    if (entities.TryGetValue(item, out var existKey))
+                    {
+                        r.Query.AppendLine(ToRelationshipCreate(p, queryKey, existKey));
+                        continue;
+                    }
+                    
                     var rNodeKey = NodeKey.Create(rMeta.Key, rIndex++, queryKey);
-                    r.Append(ToCreateNode(context, item, rNodeKey));
+                    r.Append(ToCreateNode(context, item, rNodeKey, entities));
                     r.Query.AppendLine(ToRelationshipCreate(p, queryKey, rNodeKey));
                 }
             }

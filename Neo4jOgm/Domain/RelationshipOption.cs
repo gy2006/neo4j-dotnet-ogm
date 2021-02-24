@@ -4,8 +4,6 @@ namespace Neo4jOgm.Domain
     {
         public bool Load { get; set; }
 
-        public int MinHops { get; set; }
-        
-        public int MaxHops { get; set; }
+        public int Depth { get; set; } = 1;
     }
 }
