@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Neo4jOgm.Attribute;
+using Neo4jOgm.Domain;
 
 namespace Neo4jOgmTest
 {
@@ -40,6 +41,9 @@ namespace Neo4jOgmTest
         public string City { get; set; }
         
         public int Postcode { get; set; }
+        
+        [NeoRelationship("HAS_ADDRESS", RelationshipDirection.In)]
+        public Person Owner { get; set; }
         
         [NeoCreatedAt]
         public DateTime? CreatedAt { get; set; }

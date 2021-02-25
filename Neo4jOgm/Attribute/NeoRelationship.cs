@@ -14,5 +14,11 @@ namespace Neo4jOgm.Attribute
         {
             Type = type;
         }
+        
+        public NeoRelationship(string type, RelationshipDirection direction)
+        {
+            Type = type;
+            Direction = direction;
+        }
     }
 }

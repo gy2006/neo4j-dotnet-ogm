@@ -181,14 +181,21 @@ namespace Neo4jOgmTest
             verify(created);
 
             // verify loaded entity and relationships
-            var loaded = _repository.FindById<Person>(created.Id.Value, new RelationshipOption {Load = true});
+            var loaded = _repository.FindById<Person>(created.Id.Value, new RelationshipOption {Load = true, Depth = 2});
             verify(loaded);
+            Assert.AreSame(loaded, loaded.Addresses[0].Owner);
+            Assert.AreSame(loaded, loaded.Addresses[1].Owner);
 
             // verify load entity and relationship with paging
             var all = _repository.FindAll<Person>(new PageRequest(1, 100), null, new RelationshipOption {Load = true});
             Assert.NotNull(all);
             Assert.AreEqual(1, all.TotalItems);
             verify(all.Items[0]);
+
+            var addresses = _repository.FindAll<Address>(new PageRequest(1, 5), null, new RelationshipOption{Load = true});
+            Assert.NotNull(addresses);
+            Assert.NotNull(addresses.Items[0].Owner);
+            Assert.NotNull(addresses.Items[1].Owner);
         }
 
         [Test]
