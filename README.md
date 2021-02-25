@@ -2,7 +2,11 @@
 
 Neo4j Object Graph Mapping Library for .NET
 
+https://www.nuget.org/packages/Neo4jOgm/
+
 ## Installation
+
+`Install-Package Neo4jOgm -Version 0.21.8`
 
 ## Quick start
 

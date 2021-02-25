@@ -2,6 +2,10 @@
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
+        <PackageId>Neo4jOgm</PackageId>
+        <Version>0.21.08</Version>
+        <Authors>yang.guo</Authors>
+        <Company>yang.guo</Company>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,5 +16,4 @@
       <PackageReference Include="Neo4j.Driver" Version="4.2.0" />
       <PackageReference Include="Neo4j.Driver.Simple" Version="4.2.0" />
     </ItemGroup>
-
 </Project>
