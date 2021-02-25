@@ -80,7 +80,7 @@ namespace Neo4jOgm.Repository
                     return default;
                 }
 
-                var entity = ToEntity(nodeRecord, meta);
+                var entity = EntityTransform.NewInstance(nodeRecord, meta);
                 if (ShouldLoadRelationship(option))
                 {
                     FetchRelationshipByNodeId(meta, entity, tx, option.Depth, new Dictionary<long, object>());
@@ -103,9 +103,9 @@ namespace Neo4jOgm.Repository
                 var total = tx.Run(query.Count).Single()[0].As<long>();
                 var loadRelationship = ShouldLoadRelationship(rOption);
 
-                var items = ToEntityList(records, meta, iNode =>
+                var items = EntityTransform.NewInstanceList(records, meta, iNode =>
                 {
-                    var entity = CreateInstance(iNode, meta);
+                    var entity = EntityTransform.NewInstance(iNode, meta);
                     if (!loadRelationship) return entity;
                     
                     FetchRelationshipByNodeId(meta, entity, tx, rOption.Depth, new Dictionary<long, object>());
@@ -145,15 +145,17 @@ namespace Neo4jOgm.Repository
                 var iRecords = tx.Run(CypherTranslator.FindRelationshipNodesById(meta, id, rp)).ToList();
                 if (iRecords.Count == 0) continue;
                 
-                var relatedEntityList = ToEntityList(iRecords, rMeta, iNode =>
+                var relatedEntityList = EntityTransform.NewInstanceList(iRecords, rMeta, iRecord =>
                 {
+                    var iNode = iRecord[0].As<INode>();
+                    
                     // handle cycle relationship
                     if (loaded.TryGetValue(iNode.Id, out var exist))
                     {
                         return exist;
                     }
 
-                    var rEntity = CreateInstance(iNode, rMeta);
+                    var rEntity = EntityTransform.NewInstance(iNode, rMeta);
                     FetchRelationshipByNodeId(rMeta, rEntity, tx, depth - 1, loaded);
                     return rEntity;
                 });
@@ -165,49 +167,6 @@ namespace Neo4jOgm.Repository
         private static bool ShouldLoadRelationship(RelationshipOption o)
         {
             return o != null && o.Load;
-        }
-
-        private static IList ToEntityList(IReadOnlyCollection<IRecord> records, Meta meta, Func<INode, object> onCreateEntity = null)
-        {
-            var listType = typeof(List<>);
-            var list = Activator.CreateInstance(listType.MakeGenericType(meta.RawType)).As<IList>();
-
-            foreach (var iRecord in records)
-            {
-                if (iRecord == null)
-                {
-                    continue;
-                }
-
-                var iNode = iRecord[0].As<INode>();
-                var entity = onCreateEntity == null ? CreateInstance(iNode, meta) : onCreateEntity.Invoke(iNode);
-                list.Add(entity);
-            }
-
-            return list;
-        }
-
-        private static object ToEntity(IRecord record, Meta meta)
-        {
-            var iNode = record[0].As<INode>();
-            return CreateInstance(iNode, meta);
-        }
-
-        private static object CreateInstance(INode iNode, Meta meta)
-        {
-            var instance = Activator.CreateInstance(meta.RawType);
-            meta.SetId(instance, iNode.Id);
-
-            foreach (var prop in meta.RegularProperties)
-            {
-                if (iNode.Properties.TryGetValue(prop.GetName(), out var neoVal))
-                {
-                    var objectValue = ConverterHelper.ToObjectValue(neoVal, prop.Info.PropertyType);
-                    prop.SetValue(instance, objectValue);
-                }
-            }
-
-            return instance;
         }
 
         private static void SetDefaultSortIfNotExist(PageRequest r, Meta meta)
